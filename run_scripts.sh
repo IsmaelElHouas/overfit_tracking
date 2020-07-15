@@ -1,2 +1,2 @@
 source devel/setup.bash
-rosrun tracking streamer.py
+rosrun tracking detecter.py

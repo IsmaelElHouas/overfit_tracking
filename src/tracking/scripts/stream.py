@@ -10,8 +10,8 @@ rospack = rospkg.RosPack()
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 
-def streamer():
-    rospy.init_node('streamer_node', anonymous=True)
+def Stream():
+    rospy.init_node('stream_node', anonymous=True)
     rate = rospy.Rate(30)
 
     img_pub = rospy.Publisher('stream/image', Image, queue_size=10)
@@ -40,7 +40,7 @@ def streamer():
 
 if __name__ == '__main__':
     try:
-        streamer()
+        Stream()
     except rospy.ROSInterruptException:
         pass
     finally:
