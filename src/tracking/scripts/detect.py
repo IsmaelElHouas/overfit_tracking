@@ -20,7 +20,7 @@ detection = Detection()
 class Detect:
     def __init__(self):
         rospy.init_node('detect_node', anonymous=True)
-        rate = rospy.Rate(10)
+        rate = rospy.Rate(30)
         
         self.bridge = CvBridge()
         self.frame = None
@@ -31,9 +31,18 @@ class Detect:
         while not rospy.is_shutdown():
             if self.frame is not None:
                 frame = deepcopy(self.frame)
-                bboxes = detection.detect(frame)
-                msgs = self.__bboxesMsgProcess(bboxes)
-                bboxes_pub.publish(msgs)
+                centroids, bboxes = detection.detect(frame)
+                # msgs = self.__bboxesMsgProcess(bboxes)
+                # bboxes_pub.publish(msgs)
+
+                print(len(centroids))
+
+                for cent in centroids:
+                    cv2.rectangle(frame, (cent[0]-20, cent[1]-20), (cent[0]+20, cent[1]+20), (255,0,0), 1)
+
+                cv2.imshow("", frame)
+                cv2.waitKey(1)
+
             rate.sleep()
 
     def img_callback(self, data):
@@ -57,3 +66,5 @@ if __name__ == '__main__':
         Detect()
     except rospy.ROSInterruptException:
         pass
+    finally:
+        cv2.destroyAllWindows()

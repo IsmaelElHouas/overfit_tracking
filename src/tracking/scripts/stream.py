@@ -26,14 +26,16 @@ def Stream():
         if not ret:
             break
         
-        #Looping the video
-        if frame_counter == cap.get(cv2.CAP_PROP_FRAME_COUNT):
-            frame_counter = 0
-            cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        # #Looping the video
+        # if frame_counter == cap.get(cv2.CAP_PROP_FRAME_COUNT):
+        #     frame_counter = 0
+        #     cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
             
         frame = np.uint8(frame)
         frame_msg = CvBridge().cv2_to_imgmsg(frame, encoding="passthrough")
         img_pub.publish(frame_msg)
+
+        rate.sleep()
 
     cap.release()
 
