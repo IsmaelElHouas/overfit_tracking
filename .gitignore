@@ -139,3 +139,7 @@ devel/
 # models
 *.prototxt
 *.caffemodel
+
+# input
+*.avi
+*.mov
