@@ -28,20 +28,23 @@ class Detect:
         rospy.Subscriber('/stream/image', Image, self.img_callback)
         bboxes_pub = rospy.Publisher('/detection/bboxes', BBoxes, queue_size=10)
         
+        frame_count = 0
         while not rospy.is_shutdown():
             if self.frame is not None:
-                frame = deepcopy(self.frame)
-                centroids, bboxes = detection.detect(frame)
-                # msgs = self.__bboxesMsgProcess(bboxes)
-                # bboxes_pub.publish(msgs)
-
-                print(len(centroids))
+                if frame_count < 10:
+                    frame = deepcopy(self.frame)
+                    centroids, bboxes = detection.detect(frame)
+                    print(bboxes)
+                else:    
+                    frame = deepcopy(self.frame)
+                    centroids, bboxes = detection.detect(frame)
 
                 for cent in centroids:
-                    cv2.rectangle(frame, (cent[0]-20, cent[1]-20), (cent[0]+20, cent[1]+20), (255,0,0), 1)
+                    cv2.rectangle(frame, (cent[0]-20, cent[1]-40), (cent[0]+20, cent[1]+40), (255,0,0), 1)
 
                 cv2.imshow("", frame)
                 cv2.waitKey(1)
+                frame_count = frame_count + 1
 
             rate.sleep()
 
@@ -51,14 +54,6 @@ class Detect:
         except CvBridgeError as e:
             print(e)
         self.frame = cv_image
-
-    def __bboxesMsgProcess(self, bboxes):
-        msgs = BBoxes()
-        for i in range(len(bboxes)):
-            msg = BBox()
-            msg.bbox = bboxes[i]
-            msgs.bboxes.append(msg)
-        return msgs
 
 
 if __name__ == '__main__':

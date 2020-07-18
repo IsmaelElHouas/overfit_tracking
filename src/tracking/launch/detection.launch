@@ -1,4 +1,0 @@
-<launch>	
-	<node pkg="tracking" type="stream.py" name="stream" output="screen" />
-	<node pkg="tracking" type="detect.py" name="detect" output="screen" />
-</launch>

@@ -1,2 +1,2 @@
 source devel/setup.bash
-rosrun tracking detecter.py
+roslaunch tracking track.launch

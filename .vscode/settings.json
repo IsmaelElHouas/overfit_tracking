@@ -1,3 +1,6 @@
 {
-    "python.linting.enabled": false
+    "python.linting.enabled": false,
+    "python.autoComplete.extraPaths": [
+        "/home/robotics/Workspace/overfit_tracking/devel/lib/python3/dist-packages"
+    ]
 }

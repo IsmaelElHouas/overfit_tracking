@@ -1,0 +1,23 @@
+{
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "",
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "/home/robotics/Workspace/overfit_tracking/devel/include/**",
+                "/opt/ros/melodic/include/**",
+                "/home/robotics/Workspace/overfit_tracking/src/vision_opencv/cv_bridge/include/**",
+                "/home/robotics/Workspace/overfit_tracking/src/vision_opencv/image_geometry/include/**",
+                "/usr/include/**"
+            ],
+            "name": "ROS",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu11",
+            "cppStandard": "gnu++14"
+        }
+    ],
+    "version": 4
+}

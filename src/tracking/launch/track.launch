@@ -1,0 +1,3 @@
+<launch>	
+    <node pkg="tracking" type="track.py" name="track" output="screen" />
+</launch>
