@@ -14,37 +14,35 @@ from cv_bridge import CvBridge, CvBridgeError
 from helpers.cvlib import Detection
 detection = Detection()
 
-def Stream():
-    rospy.init_node('stream_node', anonymous=True)
-    rate = rospy.Rate(30)
+from helpers.keyboard import Keyboard
+keyboard = Keyboard()
 
-    video_path = os.path.join(rospack.get_path("tracking"), "scripts/input", "cross_id.avi")
-    cap = cv2.VideoCapture(video_path)
-    
-    frame_counter = 0
-    targets = [[344, 516, 412, 780], [914, 526, 972, 644], [671, 555, 735, 715]]
-    while cap.isOpened() and not rospy.is_shutdown():
-        ret, frame = cap.read()
-        if not ret:
-            break
+def Track():
+    def __init__(self):
+        rospy.init_node('track_node', anonymous=True)
+        rate = rospy.Rate(30)
 
-        if frame_counter < 10:
-            centroids, bboxes = detection.detect(frame)
-            print(bboxes)
-        else:
-            break
+        self.bridge = CvBridge()
+        self.frame = None
 
-        frame_counter += 1
-        rate.sleep()
+        rospy.Subscriber('/stream/image', Image, self.img_callback)
 
+        while not rospy.is_shutdown():
+            key = keyboard.listener()
+            print(key)
+            rate.sleep()
 
-    cap.release()
-    cv2.destroyAllWindows()
+    def img_callback(self, data):
+        try:
+            cv_image = self.bridge.imgmsg_to_cv2(data)
+        except CvBridgeError as e:
+            print(e)
+        self.frame = cv_image
 
 
 if __name__ == '__main__':
     try:
-        Stream()
+        Track()
     except rospy.ROSInterruptException:
         pass
         
