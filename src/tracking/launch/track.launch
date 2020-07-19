@@ -1,5 +1,5 @@
 <launch>
-    <!-- <node pkg="tracking" type="stream.py" name="stream" output="screen" /> -->
+    <node pkg="tracking" type="stream.py" name="stream" output="screen" />
     <node pkg="tracking" type="keypress.py" name="keypress" output="screen" />
-    <!-- <node pkg="tracking" type="track.py" name="track" output="screen" /> -->
+    <node pkg="tracking" type="track.py" name="track" output="screen" />
 </launch>

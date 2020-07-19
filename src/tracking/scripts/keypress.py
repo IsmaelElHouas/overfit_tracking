@@ -5,6 +5,7 @@ import rospy
 from std_msgs.msg import Int8, String
 import sys, select, termios, tty
 import threading
+import time
 
 
 class Keypress(threading.Thread):
@@ -37,6 +38,7 @@ class Keypress(threading.Thread):
 
         key = ""
         self.publisher.publish(key)
+        
 
 def getKey(key_timeout):
     tty.setraw(sys.stdin.fileno())
@@ -60,10 +62,11 @@ if __name__=="__main__":
             if (key == '\x03'):
                 break
             keypress.update(key)
+            time.sleep(0.1)
+            keypress.stop()
 
     except Exception as e:
         print(e)
-
     finally:
         keypress.stop()
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
