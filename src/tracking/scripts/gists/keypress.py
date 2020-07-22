@@ -63,7 +63,7 @@ if __name__=="__main__":
                 keypress.update(key)
                 break
             except:
-                print("Pleas input a number.")
+                print("Pleas input a digit number.")
             if (key == '\x03'):
                 break
             # time.sleep(0.1)
