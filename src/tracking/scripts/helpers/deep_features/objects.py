@@ -22,7 +22,6 @@ class DeepFeatures:
         boxes = np.array(bboxes)
         boxes[:, 2] = boxes[:, 2] - boxes[:, 0]
         boxes[:, 3] = boxes[:, 3] - boxes[:, 1]
-        
         return boxes
     
     def extractBBoxFeatures(self, img, bboxes, tracking_id=0):
