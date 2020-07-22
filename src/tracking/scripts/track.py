@@ -17,6 +17,9 @@ from tracking.msg import BBox, BBoxes
 from helpers.cvlib import Detection
 detection = Detection()
 
+from helpers.deep_features import DeepFeatures
+deep_features = DeepFeatures()
+
 
 class Detect:
     def __init__(self):
@@ -33,12 +36,9 @@ class Detect:
         centroids = [(872, 581), (609, 654), (424, 645)]
         bboxes = [[845, 530, 899, 632], [574, 541, 644, 767], [386, 533, 462, 757]]
         while not rospy.is_shutdown():
-            if self.frame is not None:  
-                if frame_count == 0:
-                    frame = deepcopy(self.frame)
-                else:    
-                    frame = deepcopy(self.frame)
-                    centroids, bboxes = detection.detect(frame)
+            if self.frame is not None:      
+                frame = deepcopy(self.frame)
+                centroids, bboxes = detection.detect(frame)
 
                 if len(centroids) != 0:
                     for cent in centroids:
