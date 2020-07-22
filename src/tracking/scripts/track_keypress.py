@@ -25,6 +25,7 @@ class Detect:
         
         self.bridge = CvBridge()
         self.frame = None
+        self.pre_keypress = -1
         self.keypress = -1
 
         rospy.Subscriber('/stream/image', Image, self.img_callback)
@@ -38,11 +39,15 @@ class Detect:
                 centroids, bboxes = detection.detect(frame)
 
                 if len(centroids) != 0:
-                    if self.keypress != -1 and self.keypress < len(centroids):
-                        print(bboxes[self.keypress])
+                    if self.keypress != self.pre_keypress and self.keypress != -1 and self.keypress < len(centroids):
+                        print(self.keypress)
+                        self.pre_keypress = self.keypress
                     
+                    i = 0
                     for cent in centroids:
                         cv2.rectangle(frame, (cent[0]-20, cent[1]-40), (cent[0]+20, cent[1]+40), (255,0,0), 1)
+                        cv2.putText(frame, str(i), (cent[0]-20, cent[1]-40), cv2.FONT_HERSHEY_PLAIN, 1, (0,0,255), 2)
+                        i = i+1
 
                 cv2.imshow("", frame)
                 cv2.waitKey(1)
@@ -60,7 +65,7 @@ class Detect:
     
     def key_callback(self, data):
         if data.data != "":
-            self.keypress = int(data.data)
+            self.keypress = data.data
         else:
             self.keypress = -1
 

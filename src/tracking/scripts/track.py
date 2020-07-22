@@ -38,11 +38,9 @@ class Detect:
                 centroids, bboxes = detection.detect(frame)
 
                 if len(centroids) != 0:
-                    if self.keypress != -1 and self.keypress < len(centroids):
-                        print(bboxes[self.keypress])
-                    
                     for cent in centroids:
                         cv2.rectangle(frame, (cent[0]-20, cent[1]-40), (cent[0]+20, cent[1]+40), (255,0,0), 1)
+                        cv2.putText(img, str(i), (cent[0]-20, cent[1]-40), cv2.FONT_HERSHEY_PLAIN, 1, (0,0,255), 2)
 
                 cv2.imshow("", frame)
                 cv2.waitKey(1)

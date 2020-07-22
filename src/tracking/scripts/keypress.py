@@ -7,7 +7,6 @@ import sys, select, termios, tty
 import threading
 import time
 
-
 class Keypress(threading.Thread):
     def __init__(self):
         super(Keypress, self).__init__()
@@ -59,12 +58,16 @@ if __name__=="__main__":
     try:
         while(1):
             key = getKey(None)
+            try:
+                key = int(key)
+                keypress.update(key)
+                break
+            except:
+                print("Pleas input a number.")
             if (key == '\x03'):
                 break
-            keypress.update(key)
-            time.sleep(0.1)
-            keypress.stop()
-
+            # time.sleep(0.1)
+            # break
     except Exception as e:
         print(e)
     finally:
