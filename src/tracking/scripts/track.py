@@ -35,7 +35,6 @@ class Detect:
         rospy.Subscriber('/stream/image', Image, self.img_callback)
         bboxes_pub = rospy.Publisher('/detection/bboxes', BBoxes, queue_size=10)
         
-        frame_total = 766
         frame_count = 0
         track_id = 0
         while not rospy.is_shutdown():
@@ -47,11 +46,13 @@ class Detect:
                     self.tracking_bbox_features = mars.extractBBoxFeatures(frame, bboxes, track_id)
                 else:
                     bboxes_features = mars.extractBBoxesFeatures(frame, bboxes)
-                    features_distance = dist.cdist(self.tracking_bbox_features, bboxes_features, "cosine")
-                    tracking_id = self.__assignNewTrackingId(features_distance, threshold=0.3)
+                    features_distance = dist.cdist(self.tracking_bbox_features, bboxes_features, "cosine")[0]
+                    tracking_id = self.__assignNewTrackingId(features_distance, frame_count, threshold=0.3)
                     cent = centroids[tracking_id]
                     if tracking_id != -1:
                         cv2.rectangle(frame, (cent[0]-20, cent[1]-40), (cent[0]+20, cent[1]+40), (255,0,0), 1)
+                        cv2.putText(frame, str(frame_count), (cent[0]-20, cent[1]-40), cv2.FONT_HERSHEY_PLAIN, 5, (0,0,255), 2)
+
 
                 frame_count = frame_count + 1
                 cv2.imshow("", frame)
@@ -77,13 +78,27 @@ class Detect:
         features_distance = dist.cdist(self.tracking_bbox_features, bboxes_features, "cosine")
         return features_distance
 
-    def __assignNewTrackingId(self, distance, threshold):
+    def __assignNewTrackingId(self, distance, frame_count, threshold):
         tracking_id = -1
-        min_dist = np.argsort(distance.min(axis=0))
-        min_position = np.where(min_dist==0)
-        if distance[0][min_position[0][0]] < threshold:
-            tracking_id = min_position[0][0]
-        print(tracking_id)
+        
+        # Logic: 
+        # 1. If detect only one and the distance is less than 0.3, assign id;
+        # 2. If detect more than one, but the first two closest distances' difference is lesss than 0.1, don't assign id;
+        # 3. if the first two closest distances' difference is more than 0.1, and the closest distance is less than 0.3, assign id; 
+
+        dist_sort = np.sort(distance)
+        if len(dist_sort) > 1:
+            if (dist_sort[1]-dist_sort[0]) < 0.1:
+                tracking_id = -1
+            else:
+                min_dist = np.argsort(distance.min(axis=0))
+                min_position = np.where(min_dist==0)
+                if distance[min_position[0][0]] < threshold:
+                    tracking_id = min_position[0][0]
+        elif len(dist_sort) == 1:
+            if distance[0] < threshold:
+                tracking_id = 0
+
         return tracking_id
 
 
