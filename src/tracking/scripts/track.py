@@ -36,14 +36,14 @@ class Detect:
         bboxes_pub = rospy.Publisher('/detection/bboxes', BBoxes, queue_size=10)
         
         frame_count = 0
-        track_id = 0
+        target_id = 0
         while not rospy.is_shutdown():
             if self.frame is not None:      
                 frame = deepcopy(self.frame)
                 centroids, bboxes = detection.detect(frame)
 
                 if frame_count == 0:
-                    self.tracking_bbox_features = mars.extractBBoxFeatures(frame, bboxes, track_id)
+                    self.tracking_bbox_features = mars.extractBBoxFeatures(frame, bboxes, target_id)
                 else:
                     bboxes_features = mars.extractBBoxesFeatures(frame, bboxes)
                     features_distance = dist.cdist(self.tracking_bbox_features, bboxes_features, "cosine")[0]
@@ -51,7 +51,7 @@ class Detect:
                     cent = centroids[tracking_id]
                     if tracking_id != -1:
                         cv2.rectangle(frame, (cent[0]-20, cent[1]-40), (cent[0]+20, cent[1]+40), (255,0,0), 1)
-                        cv2.putText(frame, str(frame_count), (cent[0]-20, cent[1]-40), cv2.FONT_HERSHEY_PLAIN, 5, (0,0,255), 2)
+                        cv2.putText(frame, str(frame_count), (cent[0]-20, cent[1]-40), cv2.FONT_HERSHEY_PLAIN, 10, (0,0,255), 3)
 
 
                 frame_count = frame_count + 1
