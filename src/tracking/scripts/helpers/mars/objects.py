@@ -11,9 +11,9 @@ rospack = rospkg.RosPack()
 
 from .encoder import create_box_encoder
 
-model = os.path.join(rospack.get_path("tracking"), "scripts/helpers/mars/model/", "mars-small128.pb")
+model = os.path.join(rospack.get_path("tracking"), "scripts/helpers/mars/models/", "mars-small128.pb")
 
-class DeepFeatures:
+class MarsFeatures:
     def __init__(self):
         self.encoder = create_box_encoder(model)
 
@@ -24,8 +24,8 @@ class DeepFeatures:
         boxes[:, 3] = boxes[:, 3] - boxes[:, 1]
         return boxes
     
-    def extractBBoxFeatures(self, img, bboxes, tracking_id=0):
-        bbox = self.__preProcess([bboxes[tracking_id]])
+    def extractBBoxFeatures(self, img, bboxes, target_id=0):
+        bbox = self.__preProcess([bboxes[target_id]])
         bbox_features = self.encoder(img, bbox)
         return bbox_features
     
