@@ -11,7 +11,7 @@ rospack = rospkg.RosPack()
 
 from .encoder import create_box_encoder
 
-model = os.path.join(rospack.get_path("tracking"), "scripts/helpers/deep_features/model/", "mars-small128.pb")
+model = os.path.join(rospack.get_path("tracking"), "scripts/helpers/mars/model/", "mars-small128.pb")
 
 class DeepFeatures:
     def __init__(self):

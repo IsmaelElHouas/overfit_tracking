@@ -22,19 +22,14 @@ def Stream():
     frame_counter = 0
     while cap.isOpened() and not rospy.is_shutdown():
         ret, frame = cap.read()
-        frame_counter += 1
+         # frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT)
         if not ret:
             break
         
-        # #Looping the video
-        # if frame_counter == cap.get(cv2.CAP_PROP_FRAME_COUNT):
-        #     frame_counter = 0
-        #     cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-            
         frame = np.uint8(frame)
         frame_msg = CvBridge().cv2_to_imgmsg(frame, encoding="passthrough")
         img_pub.publish(frame_msg)
-
+        frame_counter += 1
         rate.sleep()
 
     cap.release()
@@ -45,5 +40,3 @@ if __name__ == '__main__':
         Stream()
     except rospy.ROSInterruptException:
         pass
-    finally:
-        cv2.destroyAllWindows()

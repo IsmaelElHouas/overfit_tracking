@@ -19,8 +19,8 @@ from tracking.msg import BBox, BBoxes
 from helpers.cvlib import Detection
 detection = Detection()
 
-from helpers.deep_features import DeepFeatures
-deep_features = DeepFeatures()
+from helpers.mars import DeepFeatures
+mars = DeepFeatures()
 
 
 class Detect:
@@ -35,6 +35,7 @@ class Detect:
         rospy.Subscriber('/stream/image', Image, self.img_callback)
         bboxes_pub = rospy.Publisher('/detection/bboxes', BBoxes, queue_size=10)
         
+        frame_total = 766
         frame_count = 0
         track_id = 0
         while not rospy.is_shutdown():
@@ -43,22 +44,21 @@ class Detect:
                 centroids, bboxes = detection.detect(frame)
 
                 if frame_count == 0:
-                    self.tracking_bbox_features = deep_features.extractBBoxFeatures(frame, bboxes, track_id)
+                    self.tracking_bbox_features = mars.extractBBoxFeatures(frame, bboxes, track_id)
                 else:
-                    bboxes_features = deep_features.extractBBoxesFeatures(frame, bboxes)
+                    bboxes_features = mars.extractBBoxesFeatures(frame, bboxes)
                     features_distance = dist.cdist(self.tracking_bbox_features, bboxes_features, "cosine")
-                    print(features_distance)
-
-
-                if len(centroids) != 0:
-                    for cent in centroids:
+                    tracking_id = self.__assignNewTrackingId(features_distance, threshold=0.3)
+                    cent = centroids[tracking_id]
+                    if tracking_id != -1:
                         cv2.rectangle(frame, (cent[0]-20, cent[1]-40), (cent[0]+20, cent[1]+40), (255,0,0), 1)
 
+                frame_count = frame_count + 1
                 cv2.imshow("", frame)
                 cv2.waitKey(1)
-                frame_count = frame_count + 1
-
             rate.sleep()
+            
+            
 
     def img_callback(self, data):
         try:
@@ -69,13 +69,22 @@ class Detect:
 
     #Tracking functions
     def __extractTrackingBBoxFeatures(self, bboxes, tracking_id):
-        bbox_features = deep_features.extractBBoxFeatures(self.frame, bboxes, tracking_id=tracking_id)
+        bbox_features = mars.extractBBoxFeatures(self.frame, bboxes, tracking_id=tracking_id)
         return bbox_features
     
     def __calcFeaturesDistance(self, bboxes):
-        bboxes_features = deep_features.extractBBoxesFeatures(self.frame, bboxes)
+        bboxes_features = mars.extractBBoxesFeatures(self.frame, bboxes)
         features_distance = dist.cdist(self.tracking_bbox_features, bboxes_features, "cosine")
         return features_distance
+
+    def __assignNewTrackingId(self, distance, threshold):
+        tracking_id = -1
+        min_dist = np.argsort(distance.min(axis=0))
+        min_position = np.where(min_dist==0)
+        if distance[0][min_position[0][0]] < threshold:
+            tracking_id = min_position[0][0]
+        print(tracking_id)
+        return tracking_id
 
 
 if __name__ == '__main__':
