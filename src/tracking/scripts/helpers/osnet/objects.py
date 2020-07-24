@@ -1,10 +1,8 @@
 #! /usr/bin/env python
 
+import cv2
 import numpy as np
 import os
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-import time
-from scipy.spatial import distance as dist
 import rospy
 import rospkg
 rospack = rospkg.RosPack()
@@ -31,34 +29,35 @@ class OSFeatures:
                                              [0.229, 0.224, 0.225])
         ])
 
-    def __preProcess(self, pil_frame, bbox):
-        img = pil_frame.crop(bbox)
-        img = self.transforms(img).cuda()
-        img.unsqueeze_(0)
-        return img
+    def __preProcess(self, img, bbox):
+        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img_array = np.asarray(img_rgb, dtype=np.uint8)
+        pil_img = PIm.fromarray(img_array)
+        cropped_img = pil_img.crop(bbox)
+        cropped_img = self.transforms(cropped_img).cuda()
+        cropped_img.unsqueeze_(0)
+        return cropped_img
+
+    def __featureExtractor(self, img_tensors):
+        features = self.extractor(img_tensors)
+        features = features.cpu().detach().numpy()
+        return features
     
     def extractBBoxFeatures(self, img, bboxes, target_id=0):
         bbox = bboxes[target_id]
-        frame = np.asarray(img, dtype=np.uint8)
-        pil_frame = PIm.fromarray(frame)
-        crop = self.__preProcess(pil_frame, bbox)
-        features_torch_model = self.extractor(crop)
-        features = features_torch_model.cpu().detach().numpy()
-        return features
+        cropped_img = self.__preProcess(img, bbox)
+
+        features_bbox = self.__featureExtractor(cropped_img)
+        return features_bbox
     
     def extractBBoxesFeatures(self, img, bboxes):
-        frame = np.asarray(img, dtype=np.uint8)
-        pil_frame = PIm.fromarray(frame)
-
-        crops = []
+        cropped_imgs = []
         for bbox in bboxes:
-            crop = self.__preProcess(pil_frame, bbox)
-            crops.append(crop[0])
-        crops = torch.stack(crops)
+            cropped_img = self.__preProcess(img, bbox)
+            cropped_imgs.append(cropped_img[0])
+        cropped_imgs = torch.stack(cropped_imgs)
 
-        features_torch_model = self.extractor(crops)
-        features = features_torch_model.cpu().detach().numpy()
-
-        return features
+        features_bboxes = self.__featureExtractor(cropped_imgs)
+        return features_bboxes
 
         

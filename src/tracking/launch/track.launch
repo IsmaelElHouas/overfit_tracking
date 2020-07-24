@@ -1,4 +1,4 @@
 <launch>
     <node pkg="tracking" type="stream.py" name="stream" output="screen" />
-    <node pkg="tracking" type="track_mars.py" name="track" output="screen" />
+    <node pkg="tracking" type="track_os.py" name="track" output="screen" />
 </launch>
