@@ -53,9 +53,8 @@ class OSFeatures:
         cropped_imgs = []
         for bbox in bboxes:
             cropped_img = self.__preProcess(img, bbox)
-            cropped_imgs.append(cropped_img[0])
-        cropped_imgs = torch.stack(cropped_imgs)
-        features_bboxes = self.__featureExtractor(cropped_imgs)
+            cropped_imgs = torch.stack([cropped_img])
+        features_bboxes = self.__featureExtractor(cropped_imgs[0])
         return features_bboxes
 
         

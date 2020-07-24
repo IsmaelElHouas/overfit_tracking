@@ -16,7 +16,6 @@ from tracking.msg import BBox, BBoxes
 from helpers.openpose import OpenPose
 detection = OpenPose()
 
-
 class Detect:
     def __init__(self):
         rospy.init_node('detect_node', anonymous=True)
@@ -33,7 +32,6 @@ class Detect:
             if self.frame is not None:
                 frame = deepcopy(self.frame)
                 points = detection.detect(frame)
-                print(points)
 
                 for point in points:
                     cv2.circle(frame, point, 3, [0,0,255], -1, cv2.LINE_AA)
