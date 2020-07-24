@@ -30,8 +30,8 @@ class OSFeatures:
         ])
 
     def __preProcess(self, img, bbox):
-        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        img_array = np.asarray(img_rgb, dtype=np.uint8)
+        # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img_array = np.asarray(img, dtype=np.uint8)
         pil_img = PIm.fromarray(img_array)
         cropped_img = pil_img.crop(bbox)
         cropped_img = self.transforms(cropped_img).cuda()
