@@ -1,2 +1,2 @@
 source devel/setup.bash
-roslaunch tracking track.launch
+roslaunch tracking detect.launch
