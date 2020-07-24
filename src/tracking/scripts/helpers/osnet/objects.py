@@ -46,7 +46,6 @@ class OSFeatures:
     def extractBBoxFeatures(self, img, bboxes, target_id=0):
         bbox = bboxes[target_id]
         cropped_img = self.__preProcess(img, bbox)
-
         features_bbox = self.__featureExtractor(cropped_img)
         return features_bbox
     
@@ -56,7 +55,6 @@ class OSFeatures:
             cropped_img = self.__preProcess(img, bbox)
             cropped_imgs.append(cropped_img[0])
         cropped_imgs = torch.stack(cropped_imgs)
-
         features_bboxes = self.__featureExtractor(cropped_imgs)
         return features_bboxes
 
