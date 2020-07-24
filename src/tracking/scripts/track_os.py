@@ -44,19 +44,19 @@ class Detect:
 
                 if frame_count == 0:
                     self.tracking_bbox_features = mars.extractBBoxFeatures(frame, bboxes, target_id)
-                # else:
-                #     bboxes_features = mars.extractBBoxesFeatures(frame, bboxes)
-                #     features_distance = dist.cdist(self.tracking_bbox_features, bboxes_features, "cosine")[0]
-                #     tracking_id = self.__assignNewTrackingId(features_distance, frame_count, threshold=0.3)
-                #     cent = centroids[tracking_id]
-                #     if tracking_id != -1:
-                #         cv2.rectangle(frame, (cent[0]-20, cent[1]-40), (cent[0]+20, cent[1]+40), (255,0,0), 1)
-                #         # cv2.putText(frame, str(frame_count), (cent[0]-20, cent[1]-40), cv2.FONT_HERSHEY_PLAIN, 10, (0,0,255), 3)
+                else:
+                    bboxes_features = mars.extractBBoxesFeatures(frame, bboxes)
+                    features_distance = dist.cdist(self.tracking_bbox_features, bboxes_features, "cosine")[0]
+                    tracking_id = self.__assignNewTrackingId(features_distance, frame_count, threshold=0.4)
+                    cent = centroids[tracking_id]
+                    if tracking_id != -1:
+                        cv2.rectangle(frame, (cent[0]-20, cent[1]-40), (cent[0]+20, cent[1]+40), (255,0,0), 1)
+                        # cv2.putText(frame, str(frame_count), (cent[0]-20, cent[1]-40), cv2.FONT_HERSHEY_PLAIN, 10, (0,0,255), 3)
 
 
                 frame_count = frame_count + 1
-                # cv2.imshow("", frame)
-                # cv2.waitKey(1)
+                cv2.imshow("", frame)
+                cv2.waitKey(1)
             rate.sleep()
             
     def img_callback(self, data):
@@ -81,7 +81,7 @@ class Detect:
         
         # Logic: 
         # 1. If detect only one and the distance is less than 0.3, assign id;
-        # 2. If detect more than one, but the first two closest distances' difference is lesss than 0.1, don't assign id;
+        # 2. If detect more than one, but the first two closest distances' difference is less than 0.1, don't assign id;
         # 3. if the first two closest distances' difference is more than 0.1, and the closest distance is less than 0.3, assign id; 
 
         dist_sort = np.sort(distance)
