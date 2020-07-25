@@ -84,6 +84,9 @@ class Detect:
 
     #Tracking functions
     def __roi(self, centroids, bboxes):
+        # Logic: 
+        # Only compare features of targets within centroids ROI
+
         centroids_dist = np.array(abs(centroids[:, [0]] - self.prev_target_cent[0])).flatten()
         position_roi = np.where(centroids_dist < roi_dist)[0]
         centroids_roi = centroids[position_roi, :]
@@ -91,13 +94,12 @@ class Detect:
         return centroids_roi, bboxes_roi
 
     def __assignNewTrackingId(self, distance, threshold):
-        tracking_id = -1
-        
         # Logic: 
         # 1. If detect only one and the distance is less than 0.3, assign id;
         # 2. If detect more than one, but the first two closest distances' difference is lesss than 0.1, don't assign id;
         # 3. if the first two closest distances' difference is more than 0.1, and the closest distance is less than 0.3, assign id; 
 
+        tracking_id = -1
         dist_sort = np.sort(distance)
         if len(dist_sort) == 1:
             if distance[0] < threshold:
