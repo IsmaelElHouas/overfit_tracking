@@ -6,6 +6,7 @@ from copy import deepcopy
 import numpy as np
 from scipy.spatial import distance as dist
 
+from math import *
 import os
 import rospy
 import rospkg
@@ -21,6 +22,8 @@ detection = Detection()
 
 from helpers.mars import DeepFeatures
 mars = DeepFeatures()
+width = 1280
+height = 960
 
 
 class Detect:
@@ -30,7 +33,9 @@ class Detect:
         
         self.bridge = CvBridge()
         self.frame = None
-        self.tracking_bbox_features = []       
+        self.tracking_bbox_features = None
+        self.prev_target_cent = None
+        self.prev_target_features = None
 
         rospy.Subscriber('/stream/image', Image, self.img_callback)
         bboxes_pub = rospy.Publisher('/detection/bboxes', BBoxes, queue_size=10)
@@ -41,18 +46,28 @@ class Detect:
             if self.frame is not None:      
                 frame = deepcopy(self.frame)
                 centroids, bboxes = detection.detect(frame)
+                if len(centroids) == 0:
+                    break
 
                 if frame_count == 0:
                     self.tracking_bbox_features = mars.extractBBoxFeatures(frame, bboxes, target_id)
+                    self.prev_target_cent = centroids[target_id]
                 else:
-                    bboxes_features = mars.extractBBoxesFeatures(frame, bboxes)
-                    features_distance = dist.cdist(self.tracking_bbox_features, bboxes_features, "cosine")[0]
-                    tracking_id = self.__assignNewTrackingId(features_distance, frame_count, threshold=0.3)
-                    cent = centroids[tracking_id]
-                    if tracking_id != -1:
-                        cv2.rectangle(frame, (cent[0]-20, cent[1]-40), (cent[0]+20, cent[1]+40), (255,0,0), 1)
-                        cv2.putText(frame, str(frame_count), (cent[0]-20, cent[1]-40), cv2.FONT_HERSHEY_PLAIN, 10, (0,0,255), 3)
+                    centroids_dist = np.array(abs(centroids[:, [0]] - self.prev_target_cent[0])).flatten()
+                    position_roi = np.where(centroids_dist<200)[0]
+                    centroids_roi = centroids[position_roi, :]
+                    bboxes_roi = bboxes[position_roi, :]
 
+                    # extract features of bboxes
+                    bboxes_features = mars.extractBBoxesFeatures(frame, bboxes_roi)
+                    features_distance = dist.cdist(self.tracking_bbox_features, bboxes_features, "cosine")[0]
+                    tracking_id = self.__assignNewTrackingId(features_distance, threshold=0.3)
+
+                    if tracking_id != -1:
+                        taeget_cent = centroids_roi[tracking_id]
+                        self.prev_target_cent = taeget_cent
+                        cv2.rectangle(frame, (taeget_cent[0]-20, taeget_cent[1]-40), (taeget_cent[0]+20, taeget_cent[1]+40), (255,0,0), 1)
+                        # cv2.putText(frame, str(frame_count), (cent[0]-20, cent[1]-40), cv2.FONT_HERSHEY_PLAIN, 10, (0,0,255), 3)
 
                 frame_count = frame_count + 1
                 cv2.imshow("", frame)
@@ -78,7 +93,7 @@ class Detect:
         features_distance = dist.cdist(self.tracking_bbox_features, bboxes_features, "cosine")
         return features_distance
 
-    def __assignNewTrackingId(self, distance, frame_count, threshold):
+    def __assignNewTrackingId(self, distance, threshold):
         tracking_id = -1
         
         # Logic: 

@@ -3,6 +3,7 @@
 import cv2
 import cvlib as cv
 from math import *
+import numpy as np
 
 class Detection:
     def detect(self, cv_image):
@@ -20,4 +21,4 @@ class Detection:
                 cent_y = y1 + (y2-y1)/2
                 centroids.append((int(cent_x), int(cent_y)))
                 bboxes.append(bbox)
-        return centroids, bboxes
+        return np.array(centroids), np.array(bboxes)
