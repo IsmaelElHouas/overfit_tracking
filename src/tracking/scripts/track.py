@@ -22,7 +22,7 @@ detection = Detection()
 
 from helpers.mars import DeepFeatures
 mars = DeepFeatures()
-roi_dist = 200
+roi_dist = 400
 
 
 class Detect:
@@ -40,7 +40,7 @@ class Detect:
         bboxes_pub = rospy.Publisher('/detection/bboxes', BBoxes, queue_size=10)
         
         frame_count = 0
-        target_id = 0
+        target_id = 2
         while not rospy.is_shutdown():
             if self.frame is not None:      
                 frame = deepcopy(self.frame)
@@ -102,7 +102,7 @@ class Detect:
 
         dist_sort = np.sort(distance)
         if len(dist_sort) > 1:
-            if (dist_sort[1]-dist_sort[0]) < 0.1:
+            if (dist_sort[1]-dist_sort[0]) < 0.15:
                 tracking_id = -1
             else:
                 min_dist = np.argsort(distance.min(axis=0))
