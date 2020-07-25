@@ -40,11 +40,12 @@ class Detect:
         bboxes_pub = rospy.Publisher('/detection/bboxes', BBoxes, queue_size=10)
         
         frame_count = 0
-        target_id = 2
+        target_id = 1
         while not rospy.is_shutdown():
             if self.frame is not None:      
                 frame = deepcopy(self.frame)
                 centroids, bboxes = detection.detect(frame)
+
                 if len(centroids) == 0:
                     break
 
@@ -54,16 +55,18 @@ class Detect:
                 else:
                     centroids_roi, bboxes_roi = self.__roi(centroids, bboxes)
 
-                    # extract features of bboxes
-                    bboxes_features = mars.extractBBoxesFeatures(frame, bboxes_roi)
-                    features_distance = dist.cdist(self.tracking_bbox_features, bboxes_features, "cosine")[0]
-                    tracking_id = self.__assignNewTrackingId(features_distance, threshold=0.3)
+                    if len(centroids_roi) > 0:
+                        # extract features of bboxes
+                        bboxes_features = mars.extractBBoxesFeatures(frame, bboxes_roi)
+                        
+                        features_distance = dist.cdist(self.tracking_bbox_features, bboxes_features, "cosine")[0]
+                        tracking_id = self.__assignNewTrackingId(features_distance, threshold=0.4)
 
-                    if tracking_id != -1:
-                        taeget_cent = centroids_roi[tracking_id]
-                        self.prev_target_cent = taeget_cent
-                        cv2.rectangle(frame, (taeget_cent[0]-20, taeget_cent[1]-40), (taeget_cent[0]+20, taeget_cent[1]+40), (255,0,0), 1)
-                        cv2.putText(frame, str(frame_count), (taeget_cent[0]-20, taeget_cent[1]-40), cv2.FONT_HERSHEY_PLAIN, 10, (0,0,255), 3)
+                        if tracking_id != -1:
+                            taeget_cent = centroids_roi[tracking_id]
+                            self.prev_target_cent = taeget_cent
+                            cv2.rectangle(frame, (taeget_cent[0]-20, taeget_cent[1]-40), (taeget_cent[0]+20, taeget_cent[1]+40), (255,0,0), 1)
+                            cv2.putText(frame, str(frame_count), (taeget_cent[0]-20, taeget_cent[1]-40), cv2.FONT_HERSHEY_PLAIN, 10, (0,0,255), 3)
 
                 frame_count = frame_count + 1
                 cv2.imshow("", frame)
@@ -86,11 +89,6 @@ class Detect:
         centroids_roi = centroids[position_roi, :]
         bboxes_roi = bboxes[position_roi, :]
         return centroids_roi, bboxes_roi
-    
-    def __calcFeaturesDistance(self, bboxes):
-        bboxes_features = mars.extractBBoxesFeatures(self.frame, bboxes)
-        features_distance = dist.cdist(self.tracking_bbox_features, bboxes_features, "cosine")
-        return features_distance
 
     def __assignNewTrackingId(self, distance, threshold):
         tracking_id = -1
@@ -101,7 +99,10 @@ class Detect:
         # 3. if the first two closest distances' difference is more than 0.1, and the closest distance is less than 0.3, assign id; 
 
         dist_sort = np.sort(distance)
-        if len(dist_sort) > 1:
+        if len(dist_sort) == 1:
+            if distance[0] < threshold:
+                tracking_id = 0
+        else:
             if (dist_sort[1]-dist_sort[0]) < 0.15:
                 tracking_id = -1
             else:
@@ -109,9 +110,6 @@ class Detect:
                 min_position = np.where(min_dist==0)
                 if distance[min_position[0][0]] < threshold:
                     tracking_id = min_position[0][0]
-        elif len(dist_sort) == 1:
-            if distance[0] < threshold:
-                tracking_id = 0
 
         return tracking_id
 
