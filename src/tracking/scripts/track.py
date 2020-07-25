@@ -22,8 +22,7 @@ detection = Detection()
 
 from helpers.mars import DeepFeatures
 mars = DeepFeatures()
-width = 1280
-height = 960
+roi_dist = 200
 
 
 class Detect:
@@ -53,10 +52,7 @@ class Detect:
                     self.tracking_bbox_features = mars.extractBBoxFeatures(frame, bboxes, target_id)
                     self.prev_target_cent = centroids[target_id]
                 else:
-                    centroids_dist = np.array(abs(centroids[:, [0]] - self.prev_target_cent[0])).flatten()
-                    position_roi = np.where(centroids_dist<200)[0]
-                    centroids_roi = centroids[position_roi, :]
-                    bboxes_roi = bboxes[position_roi, :]
+                    centroids_roi, bboxes_roi = self.__roi(centroids, bboxes)
 
                     # extract features of bboxes
                     bboxes_features = mars.extractBBoxesFeatures(frame, bboxes_roi)
@@ -67,7 +63,7 @@ class Detect:
                         taeget_cent = centroids_roi[tracking_id]
                         self.prev_target_cent = taeget_cent
                         cv2.rectangle(frame, (taeget_cent[0]-20, taeget_cent[1]-40), (taeget_cent[0]+20, taeget_cent[1]+40), (255,0,0), 1)
-                        # cv2.putText(frame, str(frame_count), (cent[0]-20, cent[1]-40), cv2.FONT_HERSHEY_PLAIN, 10, (0,0,255), 3)
+                        cv2.putText(frame, str(frame_count), (taeget_cent[0]-20, taeget_cent[1]-40), cv2.FONT_HERSHEY_PLAIN, 10, (0,0,255), 3)
 
                 frame_count = frame_count + 1
                 cv2.imshow("", frame)
@@ -84,9 +80,12 @@ class Detect:
         self.frame = cv_image
 
     #Tracking functions
-    def __extractTrackingBBoxFeatures(self, bboxes, tracking_id):
-        bbox_features = mars.extractBBoxFeatures(self.frame, bboxes, tracking_id=tracking_id)
-        return bbox_features
+    def __roi(self, centroids, bboxes):
+        centroids_dist = np.array(abs(centroids[:, [0]] - self.prev_target_cent[0])).flatten()
+        position_roi = np.where(centroids_dist < roi_dist)[0]
+        centroids_roi = centroids[position_roi, :]
+        bboxes_roi = bboxes[position_roi, :]
+        return centroids_roi, bboxes_roi
     
     def __calcFeaturesDistance(self, bboxes):
         bboxes_features = mars.extractBBoxesFeatures(self.frame, bboxes)
