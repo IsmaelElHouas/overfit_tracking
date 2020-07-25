@@ -22,7 +22,9 @@ detection = Detection()
 
 from helpers.mars import DeepFeatures
 mars = DeepFeatures()
-roi_dist = 400
+roi_dist = 400 # To-do: dynamic
+feature_dist = 0.4
+neighbor_dist = 0.15
 
 
 class Detect:
@@ -58,9 +60,8 @@ class Detect:
                     if len(centroids_roi) > 0:
                         # extract features of bboxes
                         bboxes_features = mars.extractBBoxesFeatures(frame, bboxes_roi)
-                        
                         features_distance = dist.cdist(self.tracking_bbox_features, bboxes_features, "cosine")[0]
-                        tracking_id = self.__assignNewTrackingId(features_distance, threshold=0.4)
+                        tracking_id = self.__assignNewTrackingId(features_distance, threshold=feature_dist)
 
                         if tracking_id != -1:
                             taeget_cent = centroids_roi[tracking_id]
@@ -72,7 +73,6 @@ class Detect:
                 cv2.imshow("", frame)
                 cv2.waitKey(1)
             rate.sleep()
-            
             
 
     def img_callback(self, data):
@@ -103,7 +103,7 @@ class Detect:
             if distance[0] < threshold:
                 tracking_id = 0
         else:
-            if (dist_sort[1]-dist_sort[0]) < 0.15:
+            if (dist_sort[1]-dist_sort[0]) < neighbor_dist:
                 tracking_id = -1
             else:
                 min_dist = np.argsort(distance.min(axis=0))
