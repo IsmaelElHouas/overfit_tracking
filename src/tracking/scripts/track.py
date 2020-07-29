@@ -16,7 +16,7 @@ from std_msgs.msg import Int8, String
 from sensor_msgs.msg import Image
 from tracking.msg import BBox, BBoxes
 
-# Helpers
+# helpers
 from helpers.cvlib import Detection
 detection = Detection()
 
@@ -42,7 +42,7 @@ class Detect:
         bboxes_pub = rospy.Publisher('/detection/bboxes', BBoxes, queue_size=10)
         
         frame_count = 0
-        target_id = 1
+        target_id = 0
         while not rospy.is_shutdown():
             if self.frame is not None:      
                 frame = deepcopy(self.frame)
@@ -52,22 +52,23 @@ class Detect:
                     break
 
                 if frame_count == 0:
-                    self.tracking_bbox_features = mars.extractBBoxFeatures(frame, bboxes, target_id)
+                    self.tracking_bbox_features = mars.extractBBoxFeatures(frame, bboxes, target_id) 
                     self.prev_target_cent = centroids[target_id]
                 else:
-                    centroids_roi, bboxes_roi = self.__roi(centroids, bboxes)
+                    if self.prev_target_cent is not None:
+                        centroids_roi, bboxes_roi = self.__roi(centroids, bboxes)
 
-                    if len(centroids_roi) > 0:
-                        # extract features of bboxes
-                        bboxes_features = mars.extractBBoxesFeatures(frame, bboxes_roi)
-                        features_distance = dist.cdist(self.tracking_bbox_features, bboxes_features, "cosine")[0]
-                        tracking_id = self.__assignNewTrackingId(features_distance, threshold=feature_dist)
+                        if len(centroids_roi) > 0:
+                            # extract features of bboxes
+                            bboxes_features = mars.extractBBoxesFeatures(frame, bboxes_roi)
+                            features_distance = dist.cdist(self.tracking_bbox_features, bboxes_features, "cosine")[0]
+                            tracking_id = self.__assignNewTrackingId(features_distance, threshold=feature_dist)
 
-                        if tracking_id != -1:
-                            taeget_cent = centroids_roi[tracking_id]
-                            self.prev_target_cent = taeget_cent
-                            cv2.rectangle(frame, (taeget_cent[0]-20, taeget_cent[1]-40), (taeget_cent[0]+20, taeget_cent[1]+40), (255,0,0), 1)
-                            cv2.putText(frame, str(frame_count), (taeget_cent[0]-20, taeget_cent[1]-40), cv2.FONT_HERSHEY_PLAIN, 10, (0,0,255), 3)
+                            if tracking_id != -1:
+                                taeget_cent = centroids_roi[tracking_id]
+                                self.prev_target_cent = taeget_cent
+                                cv2.rectangle(frame, (taeget_cent[0]-20, taeget_cent[1]-40), (taeget_cent[0]+20, taeget_cent[1]+40), (255,0,0), 1)
+                                cv2.putText(frame, str(frame_count), (taeget_cent[0]-20, taeget_cent[1]-40), cv2.FONT_HERSHEY_PLAIN, 10, (0,0,255), 3)
 
                 frame_count = frame_count + 1
                 cv2.imshow("", frame)
@@ -109,9 +110,9 @@ class Detect:
                 tracking_id = -1
             else:
                 min_dist = np.argsort(distance.min(axis=0))
-                min_position = np.where(min_dist==0)
-                if distance[min_position[0][0]] < threshold:
-                    tracking_id = min_position[0][0]
+                min_position = np.argmin(distance)
+                if distance[min_position] < threshold:
+                    tracking_id = min_position
 
         return tracking_id
 

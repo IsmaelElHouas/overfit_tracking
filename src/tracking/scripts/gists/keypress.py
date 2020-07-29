@@ -40,7 +40,7 @@ class Keypress(threading.Thread):
         
 
 def getKey(key_timeout):
-    tty.setraw(sys.stdin.fileno())
+    tty.setcbreak(sys.stdin.fileno())
     rlist, _, _ = select.select([sys.stdin], [], [], key_timeout)
     if rlist:
         key = sys.stdin.read(1)
@@ -61,13 +61,11 @@ if __name__=="__main__":
             try:
                 key = int(key)
                 keypress.update(key)
-                break
             except:
                 print("Pleas input a digit number.")
             if (key == '\x03'):
                 break
-            # time.sleep(0.1)
-            # break
+
     except Exception as e:
         print(e)
     finally:

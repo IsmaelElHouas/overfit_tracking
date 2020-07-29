@@ -38,20 +38,20 @@ class Detect:
                 frame = deepcopy(self.frame)
                 centroids, bboxes = detection.detect(frame)
 
+                print(self.keypress)
+                print(self.pre_keypress)
+                if self.keypress != self.pre_keypress and self.keypress != -1:
+                    self.pre_keypress = self.keypress
+
                 if len(centroids) != 0:
-                    if self.keypress != self.pre_keypress and self.keypress != -1 and self.keypress < len(centroids):
-                        print(self.keypress)
-                        self.pre_keypress = self.keypress
-                    
                     i = 0
                     for cent in centroids:
                         cv2.rectangle(frame, (cent[0]-20, cent[1]-40), (cent[0]+20, cent[1]+40), (255,0,0), 1)
                         cv2.putText(frame, str(i), (cent[0]-20, cent[1]-40), cv2.FONT_HERSHEY_PLAIN, 1, (0,0,255), 2)
                         i = i+1
 
-                cv2.imshow("", frame)
+                # cv2.imshow("", frame)
                 cv2.waitKey(1)
-                self.keypress = -1
                 frame_count = frame_count + 1
 
             rate.sleep()
@@ -65,7 +65,7 @@ class Detect:
     
     def key_callback(self, data):
         if data.data != "":
-            self.keypress = data.data
+            self.keypress = int(data.data)
         else:
             self.keypress = -1
 
