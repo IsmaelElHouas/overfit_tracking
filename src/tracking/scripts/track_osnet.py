@@ -36,7 +36,7 @@ class Detect:
         bboxes_pub = rospy.Publisher('/detection/bboxes', BBoxes, queue_size=10)
         
         frame_count = 0
-        target_id = 1
+        target_id = 0
         while not rospy.is_shutdown():
             if self.frame is not None:      
                 frame = deepcopy(self.frame)
