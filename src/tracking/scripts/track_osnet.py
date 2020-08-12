@@ -47,7 +47,7 @@ class Detect:
                 else:
                     bboxes_features = mars.extractBBoxesFeatures(frame, bboxes)
                     features_distance = dist.cdist(self.tracking_bbox_features, bboxes_features, "cosine")[0]
-                    tracking_id = self.__assignNewTrackingId(features_distance, frame_count, threshold=0.4)
+                    tracking_id = self.__assignNewTrackingId(features_distance, frame_count, neighbor_dist=0.1, threshold=0.4)
                     cent = centroids[tracking_id]
                     if tracking_id != -1:
                         cv2.rectangle(frame, (cent[0]-20, cent[1]-40), (cent[0]+20, cent[1]+40), (255,0,0), 1)
@@ -76,7 +76,7 @@ class Detect:
         features_distance = dist.cdist(self.tracking_bbox_features, bboxes_features, "cosine")
         return features_distance
 
-    def __assignNewTrackingId(self, distance, frame_count, threshold):
+    def __assignNewTrackingId(self, distance, frame_count, neighbor_dist, threshold):
         tracking_id = -1
         
         # Logic: 
@@ -84,18 +84,19 @@ class Detect:
         # 2. If detect more than one, but the first two closest distances' difference is less than 0.1, don't assign id;
         # 3. if the first two closest distances' difference is more than 0.1, and the closest distance is less than 0.3, assign id; 
 
+        tracking_id = -1
         dist_sort = np.sort(distance)
-        if len(dist_sort) > 1:
-            if (dist_sort[1]-dist_sort[0]) < 0.1:
+        if len(dist_sort) == 1:
+            if distance[0] < threshold:
+                tracking_id = 0
+        else:
+            if (dist_sort[1]-dist_sort[0]) < neighbor_dist:
                 tracking_id = -1
             else:
                 min_dist = np.argsort(distance.min(axis=0))
-                min_position = np.where(min_dist==0)
-                if distance[min_position[0][0]] < threshold:
-                    tracking_id = min_position[0][0]
-        elif len(dist_sort) == 1:
-            if distance[0] < threshold:
-                tracking_id = 0
+                min_position = np.argmin(distance)
+                if distance[min_position] < threshold:
+                    tracking_id = min_position
 
         return tracking_id
 
