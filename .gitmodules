@@ -1,3 +1,6 @@
 [submodule "src/vision_opencv"]
     path = src/vision_opencv
     url = https://github.com/Tao-wecorp/vision_opencv
+[submodule "src/deep-person-reid"]
+	path = src/deep-person-reid
+	url = https://github.com/KaiyangZhou/deep-person-reid
