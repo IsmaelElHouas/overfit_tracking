@@ -139,6 +139,7 @@ devel/
 # models
 *.prototxt
 *.caffemodel
+*.pth
 
 # input
 *.avi
